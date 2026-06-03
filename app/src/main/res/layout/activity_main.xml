@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="@string/title"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    <ImageButton
+        android:id="@+id/connectButton"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:layout_marginTop="20dp"
+        android:adjustViewBounds="false"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/connect_button"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/connect" />
+
+    <ImageButton
+        android:id="@+id/convertBookButton"
+        android:layout_width="match_parent"
+        android:layout_height="176dp"
+        android:layout_marginTop="12dp"
+        android:adjustViewBounds="false"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/convert_book_button"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/book" />
+
+    <ImageButton
+        android:id="@+id/convertImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="176dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="false"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/convert_image_button"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/image" />
+
+</LinearLayout>

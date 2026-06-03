@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cropRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/cropToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/crop_toolbar_background"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Surface"
+        app:navigationIconTint="@color/crop_toolbar_on_background"
+        app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+        app:title="@string/image_crop_title"
+        app:titleTextColor="@color/crop_toolbar_on_background"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/cropFileNameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        app:hintEnabled="true"
+        android:hint="@string/image_crop_filename_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cropFileNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:singleLine="true"
+            android:maxLines="1"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.pala.one.companion.CropImageView
+        android:id="@+id/cropImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/cropToleranceLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:textColorLink="?attr/colorPrimary"
+        android:textAppearance="?attr/textAppearanceBody2" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/cropToleranceSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/image_crop_black_tolerance_slider_a11y"
+        android:stepSize="1"
+        android:value="0"
+        android:valueFrom="-100"
+        android:valueTo="100"
+        app:haloColor="@color/crop_slider_halo"
+        app:labelBehavior="gone"
+        app:thumbColor="@color/crop_slider_thumb"
+        app:trackColorActive="@color/crop_slider_track_active"
+        app:trackColorInactive="@color/crop_slider_track_inactive" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="8dp">
+
+        <ImageButton
+            android:id="@+id/cropSaveButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:adjustViewBounds="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/image_crop_save"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/save" />
+
+        <ImageButton
+            android:id="@+id/cropInvertButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="12dp"
+            android:adjustViewBounds="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/image_crop_invert"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/invert" />
+
+        <ImageButton
+            android:id="@+id/cropRotateButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="12dp"
+            android:adjustViewBounds="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/image_crop_rotate"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/rotate" />
+    </LinearLayout>
+
+</LinearLayout>

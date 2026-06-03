@@ -1,0 +1,34 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Local SDK path (machine-specific)
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Built artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Signing / secrets — never commit these
+*.jks
+*.keystore
+play store key/
+play store key
+
+# Kotlin
+*.kotlin_module

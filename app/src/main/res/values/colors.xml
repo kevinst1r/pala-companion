@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="crop_toolbar_background">#EDEAD4</color>
+    <color name="crop_toolbar_on_background">#FF000000</color>
+    <color name="crop_slider_thumb">#FFFFFFFF</color>
+    <color name="crop_slider_track_inactive">#DEDAC9</color>
+    <color name="crop_slider_track_active">#CAC6B4</color>
+    <color name="crop_slider_halo">#40FFFFFF</color>
+</resources>
