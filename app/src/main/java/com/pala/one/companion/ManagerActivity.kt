@@ -23,6 +23,7 @@ class ManagerActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_MANAGER_URL = "extra_manager_url"
         const val EXTRA_RESTORE_WIFI = "extra_restore_wifi"
+        const val EXTRA_SAME_NETWORK = "extra_same_network"
     }
 
     private lateinit var webView: WebView
@@ -64,6 +65,10 @@ class ManagerActivity : AppCompatActivity() {
         webView = findViewById(R.id.managerWebView)
         val restoreWifiButton: ImageButton = findViewById(R.id.restoreWifiButton)
         val managerUrl = intent.getStringExtra(EXTRA_MANAGER_URL) ?: "http://192.168.4.1/"
+        val sameNetwork = intent.getBooleanExtra(EXTRA_SAME_NETWORK, false)
+        if (sameNetwork) {
+            restoreWifiButton.visibility = View.GONE
+        }
 
         webView.webViewClient = WebViewClient()
         webView.webChromeClient = object : WebChromeClient() {

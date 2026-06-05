@@ -16,7 +16,9 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
+import android.widget.CheckBox
 import android.widget.ImageButton
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
@@ -37,11 +39,21 @@ import org.jsoup.Jsoup
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "PalaOneCompanion"
+        private const val PREFS_NAME = "pala_companion_prefs"
+        private const val KEY_REMEMBER_CONNECT = "remember_connect_choice"
+        private const val KEY_CONNECT_MODE = "connect_mode"
+        private const val CONNECT_MODE_READER_WIFI = 0
+        private const val CONNECT_MODE_SAME_NETWORK = 1
+        private val SAME_NETWORK_BASE_URLS = listOf(
+            "http://pala-one.local",
+            "http://192.168.0.11"
+        )
     }
 
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var managerUrl: String = "http://192.168.4.1/"
     private var isReaderConnected: Boolean = false
+    private var isApBound: Boolean = false
     private var didAutoOpenManagerForConnection: Boolean = false
 
     private val managerLauncher =
@@ -50,6 +62,8 @@ class MainActivity : AppCompatActivity() {
                 result.data?.getBooleanExtra(ManagerActivity.EXTRA_RESTORE_WIFI, false) == true
             if (shouldRestoreWifi) {
                 releaseNetworkBinding()
+            } else if (isReaderConnected && !isApBound) {
+                isReaderConnected = false
             }
         }
 
@@ -82,14 +96,18 @@ class MainActivity : AppCompatActivity() {
         val convertImageButton: ImageButton = findViewById(R.id.convertImageButton)
 
         connectButton.setOnClickListener {
-            ensurePermissionsAndConnect()
+            startConnectFlow()
+        }
+        connectButton.setOnLongClickListener {
+            showConnectOptionsDialog()
+            true
         }
         convertBookButton.setOnClickListener { openBookPicker() }
         convertImageButton.setOnClickListener { openImagePicker() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (isReaderConnected) {
+                if (isReaderConnected && isApBound) {
                     AlertDialog.Builder(this@MainActivity)
                         .setTitle(R.string.connected_exit_title)
                         .setMessage(R.string.connected_exit_message)
@@ -106,6 +124,72 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun startConnectFlow() {
+        val prefs = getConnectPrefs()
+        if (prefs.getBoolean(KEY_REMEMBER_CONNECT, false)) {
+            applyConnectMode(prefs.getInt(KEY_CONNECT_MODE, CONNECT_MODE_READER_WIFI))
+            return
+        }
+        showConnectOptionsDialog()
+    }
+
+    private fun showConnectOptionsDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_connect_options, null)
+        val readerWifiOption: RadioButton = view.findViewById(R.id.connectModeReaderWifi)
+        val sameNetworkOption: RadioButton = view.findViewById(R.id.connectModeSameNetwork)
+        val rememberChoice: CheckBox = view.findViewById(R.id.connectRememberChoice)
+
+        val prefs = getConnectPrefs()
+        when (prefs.getInt(KEY_CONNECT_MODE, CONNECT_MODE_READER_WIFI)) {
+            CONNECT_MODE_SAME_NETWORK -> sameNetworkOption.isChecked = true
+            else -> readerWifiOption.isChecked = true
+        }
+        rememberChoice.isChecked = prefs.getBoolean(KEY_REMEMBER_CONNECT, false)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.connect_option_title)
+            .setView(view)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val mode = if (sameNetworkOption.isChecked) {
+                    CONNECT_MODE_SAME_NETWORK
+                } else {
+                    CONNECT_MODE_READER_WIFI
+                }
+                if (rememberChoice.isChecked) {
+                    saveConnectPreference(mode)
+                } else {
+                    clearConnectPreference()
+                }
+                applyConnectMode(mode)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun applyConnectMode(mode: Int) {
+        when (mode) {
+            CONNECT_MODE_READER_WIFI -> ensurePermissionsAndConnect()
+            CONNECT_MODE_SAME_NETWORK -> connectViaSameNetwork()
+        }
+    }
+
+    private fun getConnectPrefs() =
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private fun saveConnectPreference(mode: Int) {
+        getConnectPrefs().edit()
+            .putBoolean(KEY_REMEMBER_CONNECT, true)
+            .putInt(KEY_CONNECT_MODE, mode)
+            .apply()
+    }
+
+    private fun clearConnectPreference() {
+        getConnectPrefs().edit()
+            .putBoolean(KEY_REMEMBER_CONNECT, false)
+            .remove(KEY_CONNECT_MODE)
+            .apply()
     }
 
     private fun ensurePermissionsAndConnect() {
@@ -169,6 +253,7 @@ class MainActivity : AppCompatActivity() {
                     cm.bindProcessToNetwork(network)
                     runOnUiThread {
                         isReaderConnected = true
+                        isApBound = true
                     }
                     checkDeviceApi(network)
                 }
@@ -176,6 +261,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onUnavailable() {
                     runOnUiThread {
                         isReaderConnected = false
+                        isApBound = false
                         didAutoOpenManagerForConnection = false
                     }
                 }
@@ -183,6 +269,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onLost(network: Network) {
                     runOnUiThread {
                         isReaderConnected = false
+                        isApBound = false
                         didAutoOpenManagerForConnection = false
                     }
                 }
@@ -219,7 +306,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         if (!didAutoOpenManagerForConnection) {
                             didAutoOpenManagerForConnection = true
-                            openManagerInApp()
+                            openManagerInApp(sameNetwork = false)
                         }
                     }
                 }
@@ -227,11 +314,59 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     if (!didAutoOpenManagerForConnection) {
                         didAutoOpenManagerForConnection = true
-                        openManagerInApp()
+                        openManagerInApp(sameNetwork = false)
                     }
                 }
             }
         }.start()
+    }
+
+    private fun connectViaSameNetwork() {
+        showToast(getString(R.string.same_network_connecting))
+        Thread {
+            val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build()
+
+            for (baseUrl in SAME_NETWORK_BASE_URLS) {
+                val resolvedUrl = probeSameNetworkReader(client, baseUrl) ?: continue
+                runOnUiThread {
+                    isReaderConnected = true
+                    isApBound = false
+                    managerUrl = resolvedUrl
+                    openManagerInApp(sameNetwork = true)
+                }
+                return@Thread
+            }
+
+            runOnUiThread {
+                showToast(getString(R.string.same_network_falling_back))
+                ensurePermissionsAndConnect()
+            }
+        }.start()
+    }
+
+    private fun probeSameNetworkReader(client: OkHttpClient, baseUrl: String): String? {
+        val infoUrl = "$baseUrl/api/info"
+        try {
+            client.newCall(Request.Builder().url(infoUrl).get().build()).execute().use { response ->
+                if (response.isSuccessful) {
+                    val body = response.body?.string().orEmpty()
+                    return extractManagerUrl(body).ifBlank { "$baseUrl/" }
+                }
+            }
+        } catch (_: IOException) {
+            // Fall through and try the manager root.
+        }
+
+        return try {
+            client.newCall(Request.Builder().url("$baseUrl/").get().build()).execute().use { response ->
+                if (response.isSuccessful) "$baseUrl/" else null
+            }
+        } catch (_: IOException) {
+            null
+        }
     }
 
     private fun extractManagerUrl(jsonBody: String): String {
@@ -243,10 +378,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openManagerInApp() {
+    private fun openManagerInApp(sameNetwork: Boolean) {
         try {
             val intent = Intent(this, ManagerActivity::class.java)
             intent.putExtra(ManagerActivity.EXTRA_MANAGER_URL, managerUrl)
+            intent.putExtra(ManagerActivity.EXTRA_SAME_NETWORK, sameNetwork)
             managerLauncher.launch(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to open manager in app", e)
@@ -254,17 +390,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun releaseNetworkBinding() {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        networkCallback?.let {
-            try {
-                cm.unregisterNetworkCallback(it)
-            } catch (_: Exception) {
-                // Ignore if callback is already unregistered or never registered.
+        if (isApBound) {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            networkCallback?.let {
+                try {
+                    cm.unregisterNetworkCallback(it)
+                } catch (_: Exception) {
+                    // Ignore if callback is already unregistered or never registered.
+                }
             }
+            networkCallback = null
+            cm.bindProcessToNetwork(null)
         }
-        networkCallback = null
-        cm.bindProcessToNetwork(null)
         isReaderConnected = false
+        isApBound = false
         didAutoOpenManagerForConnection = false
     }
 

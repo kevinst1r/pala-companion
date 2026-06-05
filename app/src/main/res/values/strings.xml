@@ -3,6 +3,13 @@
     <string name="app_name">Pala Companion</string>
     <string name="title">Pala Companion</string>
     <string name="connect_button">Connect to Reader</string>
+    <string name="connect_option_title">Connect to reader</string>
+    <string name="connect_option_reader_wifi">Reader Wi‑Fi</string>
+    <string name="connect_option_same_network">Same network</string>
+    <string name="connect_option_remember">Remember</string>
+    <string name="same_network_connecting">Looking for reader on your network…</string>
+    <string name="same_network_connection_failed">Could not reach the reader at pala-one.local or 192.168.0.11.</string>
+    <string name="same_network_falling_back">Same network failed. Trying reader Wi‑Fi…</string>
     <string name="convert_book_button">Convert Book</string>
     <string name="convert_image_button">Convert Image</string>
     <string name="release_button">RESTORE WI-FI</string>
